@@ -50,7 +50,9 @@ def object_detector(image):
             data_list.append([class_names[int(classid)], box[2], (box[0], box[1] - 2)])
         elif int(classid) == 67:  # Mobile phone class id
             data_list.append([class_names[int(classid)], box[2], (box[0], box[1] - 2)])
-        # If you want to include more classes, add more 'elif' statements here
+        # If we want to include more classes, add more 'elif' statements here
+    # [Still not completed this part]
+    
         # Returning list containing the object data
     return data_list
 
