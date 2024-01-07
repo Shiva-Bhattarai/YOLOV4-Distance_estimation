@@ -12,8 +12,8 @@ NMS_THRESHOLD = 0.3
 
 # Colors for object detected
 COLORS = [(255, 0, 0), (255, 0, 255), (0, 255, 255), (255, 255, 0), (0, 255, 0), (255, 0, 0)]
-BRIGHT_BLUE = (255, 191, 0)  # Bright blue color
 GREEN = (0, 255, 0)
+
 
 # Defining fonts
 FONTS = cv.FONT_HERSHEY_COMPLEX
@@ -41,8 +41,11 @@ def object_detector(image):
         # Define color of each object based on its class id
         color = COLORS[int(classid) % len(COLORS)]
 
-        # Draw rectangle on object
-        cv.rectangle(image, box, color, 2)
+        label = "%s" % class_names[int(classid)]
+
+        
+      
+        cv.putText(image, label, (box[0], box[1] - 14), FONTS, 1, color, 2)
 
         # Getting the data
         # 1: class name, 2: object width in pixels, 3: position where to draw text (distance)
@@ -50,9 +53,7 @@ def object_detector(image):
             data_list.append([class_names[int(classid)], box[2], (box[0], box[1] - 2)])
         elif int(classid) == 67:  # Mobile phone class id
             data_list.append([class_names[int(classid)], box[2], (box[0], box[1] - 2)])
-        # If we want to include more classes, add more 'elif' statements here
-    # [Still not completed this part]
-    
+        # If you want to include more classes, add more 'elif' statements here
         # Returning list containing the object data
     return data_list
 
@@ -70,15 +71,20 @@ ref_person = cv.imread('ReferenceImages/image14.jpg')
 ref_mobile = cv.imread('ReferenceImages/image4.jpg')
 
 mobile_data = object_detector(ref_mobile)
-mobile_width_in_rf = mobile_data[0][1] 
+mobile_width_in_rf = mobile_data[0][1]  # Using index 0 since the data is a list of lists
+
 person_data = object_detector(ref_person)
-person_width_in_rf = person_data[0][1]  
+person_width_in_rf = person_data[0][1]  # Using index 0 since the data is a list of lists
 
 print(f"Person width in pixels: {person_width_in_rf}, mobile width in pixels: {mobile_width_in_rf}")
 
 # Finding focal length
 focal_person = focal_length_finder(KNOWN_DISTANCE, PERSON_WIDTH, person_width_in_rf)
 focal_mobile = focal_length_finder(KNOWN_DISTANCE, MOBILE_WIDTH, mobile_width_in_rf)
+
+# OpenCV window properties
+cv.namedWindow("frame", cv.WND_PROP_FULLSCREEN)
+cv.setWindowProperty("frame", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
 
 cap = cv.VideoCapture(0)
 while True:
@@ -92,8 +98,7 @@ while True:
         elif d[0] == 'cell phone':
             distance = distance_finder(focal_mobile, MOBILE_WIDTH, d[1])
             x, y = d[2]
-        cv.putText(frame, f'{d[0]}', (x + 5, y - 30), FONTS, 1, BRIGHT_BLUE, 2)
-        cv.putText(frame, f'{round(distance, 2)} meters', (x + 5, y - 10), FONTS, 0.7, BRIGHT_BLUE, 2)
+        cv.putText(frame, f' {round(distance, 2)} meters', (x + 5, y + 13), FONTS, 0.8, GREEN, 2)
 
     cv.imshow('frame', frame)
 
