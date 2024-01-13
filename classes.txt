@@ -72,7 +72,7 @@ toaster
 sink
 refrigerator
 book
-clock
+watch
 vase
 scissors
 teddy bear
