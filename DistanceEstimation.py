@@ -7,14 +7,14 @@ PERSON_WIDTH = 11 # INCHES
 MOBILE_WIDTH = 2  # INCHES
 BOTTLE_WIDTH = 1.8 # INCHES
 CAR_WIDTH = 15
-BOOK_WIDTH = 10
-CLOCK_WIDTH = 12
+BOOK_WIDTH = 9
+CLOCK_WIDTH = 8
 
 
 # Object detector constant
 CONFIDENCE_THRESHOLD = 0.4
 
-NMS_THRESHOLD = 0.3
+NMS_THRESHOLD = 0.001
 
 # Colors for object detected
 COLORS = [(255, 0, 0), (255, 0, 255), (0, 255, 255), (255, 255, 0), (0, 255, 0), (255, 0, 0)]
@@ -42,14 +42,16 @@ def object_detector(image):
     if image is None or image.size == 0:
         return []
 
-    classes, _, boxes = model.detect(image, CONFIDENCE_THRESHOLD, NMS_THRESHOLD)
+    classes, confidences, boxes = model.detect(image, CONFIDENCE_THRESHOLD, NMS_THRESHOLD)
     # Creating an empty list to add objects data
     data_list = []
-    for (classid, _, box) in zip(classes, _, boxes):
+    
+    for classid, confidence, box in zip(classes, confidences, boxes):
         # Define color of each object based on its class id
         color = COLORS[int(classid) % len(COLORS)]
-
-        label = "%s" % class_names[int(classid)]
+        
+        # Label the object as "unknown object" if confidence is lower than the threshold
+        label = class_names[int(classid)] if confidence >= 0.5 else "unknown object"
 
         # Adding back the line to draw rectangle around detected objects
         cv.rectangle(image, box, color, 2)
@@ -57,11 +59,11 @@ def object_detector(image):
 
         # Getting the data
         # 1: class name, 2: object width in pixels, 3: position where to draw text (distance)
-        if label in ["person", "cell phone", "bottle", "book", "car", "clock"]:
-            data_list.append([label, box[2], (box[0], box[1] - 2)])
-       
-        # Returning list containing the object data
+        data_list.append([label, box[2], (box[0], box[1] - 2)])
+
+    # Returning list containing the object data
     return data_list
+
 
 # Focal length finder function
 def focal_length_finder(measured_distance, real_width, width_in_rf):
@@ -146,7 +148,7 @@ while True:
         elif d[0] == 'clock':
             distance = distance_finder(focal_clock, CLOCK_WIDTH, d[1])
             x, y = d[2]
-        cv.putText(frame, f' {round(distance, 2)} metres', (x + 5, y + 13), FONTS, 0.8, (0, 0, 0), 2)
+        cv.putText(frame, f' {round(distance, 2)} metres', (x + 5, y + 13), FONTS, 0.8, (1, 1, 1), 2)
 
     cv.imshow('frame', frame)
 
@@ -155,4 +157,4 @@ while True:
         break
 
 cv.destroyAllWindows()
-cap.release()
+cap.release()     
